@@ -1,4 +1,4 @@
-PATCH http://localhost:8080/pessoas/1
+PATCH http://localhost:8080/notepads/1
 Content-Type: application/json
 
 {

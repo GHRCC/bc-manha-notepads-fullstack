@@ -1,5 +1,5 @@
 const express = require("express");
-const json = require("./json");
+const notepadService = require("./notepadService");
 
 const app = express();
 const host = "0.0.0.0";
@@ -8,83 +8,43 @@ const port = 8080;
 app.use(express.static("public"));
 app.use(express.json());
 
-// Lista de pessoas
-app.get("/pessoas", (req, res) => {
-  const pessoasFiles = json.listJSON("data", "pessoas");
-  const pessoas = pessoasFiles.map((file) =>
-    json.readJSON("data", "pessoas", file)
-  );
-  res.json(pessoas);
+// Lista de notepads
+app.get("/notepads", (req, res) => {
+  const notepads = notepadService.findNotepads();
+  res.json(notepads);
 });
 
-// Pega pessoa pelo ID
-app.get("/pessoas/:id", (req, res) => {
+// Pega notepad pelo ID
+app.get("/notepads/:id", (req, res) => {
   const id = Number(req.params.id);
-  const pessoa = json.readJSON("data", "pessoas", `${id}.json`);
-  res.json(pessoa);
+  const notepad = notepadService.findNotepadById(id);
+  res.json(notepad);
 });
 
-// Criar uma pessoa
-app.post("/pessoas", (req, res) => {
-  const pessoasLatestId = json.readJSON("data", "pessoasLatestId.json");
-  const pessoaId = pessoasLatestId.latestId + 1;
-  json.updateJSON(["data", "pessoasLatestId.json"], {
-    latestId: pessoaId,
-  });
-
-  const pessoa = {
-    id: pessoaId,
-    ...req.body,
-  };
-  json.createJSON(["data", "pessoas", `${pessoaId}.json`], pessoa);
-
-  const response = {
-    success: true,
-    data: { pessoa },
-  };
+// Criar uma notepad
+app.post("/notepads", (req, res) => {
+  const response = notepadService.createNotepadById(req.body);
   res.json(response);
 });
 
-// Sobreescrever uma pessoa pelo ID
-app.put("/pessoas/:id", (req, res) => {
+// Sobreescrever uma notepad pelo ID
+app.put("/notepads/:id", (req, res) => {
   const id = Number(req.params.id);
-  const pessoa = {
-    id,
-    ...req.body,
-  };
-  json.overwriteJSON(["data", "pessoas", `${id}.json`], pessoa);
-
-  const response = {
-    success: true,
-    data: { pessoa },
-  };
+  const response = notepadService.overwriteNotepadById(id, req.body);
   res.json(response);
 });
 
-// Atualizar parcialmente uma pessoa pelo ID
-app.patch("/pessoas/:id", (req, res) => {
+// Atualizar parcialmente uma notepad pelo ID
+app.patch("/notepads/:id", (req, res) => {
   const id = Number(req.params.id);
-  json.updateJSON(["data", "pessoas", `${id}.json`], req.body);
-  const pessoa = json.readJSON("data", "pessoas", `${id}.json`);
-
-  const response = {
-    success: true,
-    data: { pessoa },
-  };
+  const response = notepadService.updateNotepadById(id, req.body);
   res.json(response);
 });
 
-// Deletar uma pessoa pelo ID
-app.delete("/pessoas/:id", (req, res) => {
+// Deletar uma notepad pelo ID
+app.delete("/notepads/:id", (req, res) => {
   const id = Number(req.params.id);
-  const pessoa = json.readJSON("data", "pessoas", `${id}.json`);
-  json.deleteJSON("data", "pessoas", `${id}.json`);
-  const response = {
-    success: true,
-    data: {
-      pessoa,
-    },
-  };
+  const response = notepadService.deleteNotepadById(id);
   res.json(response);
 });
 
