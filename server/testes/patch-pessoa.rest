@@ -1,0 +1,7 @@
+PATCH http://localhost:8080/pessoas/1
+Content-Type: application/json
+
+{
+  "surname": "Gabriel Velho",  
+  "age": 130
+}
