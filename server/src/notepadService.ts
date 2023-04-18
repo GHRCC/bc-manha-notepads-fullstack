@@ -1,11 +1,12 @@
-const json = require("./json");
+import * as json from "./json";
+import type { Notepad } from "./types";
 
-function findNotepadById(id) {
+export function findNotepadById(id: number) {
   const notepad = json.readJSON("data", "notepads", `${id}.json`);
   return notepad;
 }
 
-function findNotepads() {
+export function findNotepads() {
   const notepadsFiles = json.listJSON("data", "notepads");
   const notepads = notepadsFiles.map((file) =>
     json.readJSON("data", "notepads", file)
@@ -13,7 +14,7 @@ function findNotepads() {
   return notepads;
 }
 
-function deleteNotepadById(id) {
+export function deleteNotepadById(id: number) {
   const notepad = json.readJSON("data", "notepads", `${id}.json`);
   json.deleteJSON("data", "notepads", `${id}.json`);
   const response = {
@@ -26,16 +27,16 @@ function deleteNotepadById(id) {
   return response;
 }
 
-function createNotepadById(notepadData) {
+export function createNotepadById(notepadData: Notepad) {
   const notepadsLatestId = json.readJSON("data", "notepadsLatestId.json");
-  const notepadId = notepadsLatestId.latestId + 1;
+  const notepadId: number = notepadsLatestId.latestId + 1;
   json.updateJSON(["data", "notepadsLatestId.json"], {
     latestId: notepadId,
   });
 
   const notepad = {
-    id: notepadId,
     ...notepadData,
+    id: notepadId,
   };
   json.createJSON(["data", "notepads", `${notepadId}.json`], notepad);
 
@@ -47,7 +48,7 @@ function createNotepadById(notepadData) {
   return response;
 }
 
-function updateNotepadById(id, notepadData) {
+export function updateNotepadById(id: number, notepadData: Notepad) {
   json.updateJSON(["data", "notepads", `${id}.json`], notepadData);
   const notepad = json.readJSON("data", "notepads", `${id}.json`);
 
@@ -59,10 +60,10 @@ function updateNotepadById(id, notepadData) {
   return response;
 }
 
-function overwriteNotepadById(id, notepadData) {
+export function overwriteNotepadById(id: number, notepadData: Notepad) {
   const notepad = {
-    id,
     ...notepadData,
+    id,
   };
   json.overwriteJSON(["data", "notepads", `${id}.json`], notepad);
 
@@ -73,12 +74,3 @@ function overwriteNotepadById(id, notepadData) {
 
   return response;
 }
-
-module.exports = {
-  findNotepads,
-  findNotepadById,
-  deleteNotepadById,
-  createNotepadById,
-  updateNotepadById,
-  overwriteNotepadById,
-};
