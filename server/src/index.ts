@@ -11,7 +11,9 @@ app.use(express.json());
 
 // Lista de notepads
 app.get("/notepads", (req, res) => {
-  const notepads = notepadService.findNotepads();
+  const limit = Number(req.query.limit);
+  const offset = Number(req.query.offset);
+  const notepads = notepadService.findNotepads().slice(offset, offset + limit);
   res.status(200).json(notepads);
 });
 
@@ -24,6 +26,7 @@ app.get("/notepads/:id", (req, res) => {
 
 // Criar uma notepad
 app.post("/notepads", (req, res) => {
+  console.log(req.query);
   const response = notepadService.createNotepadById(req.body);
   res.status(201).json(response);
 });
