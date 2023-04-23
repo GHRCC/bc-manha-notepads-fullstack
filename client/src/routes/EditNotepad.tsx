@@ -31,7 +31,7 @@ export function EditNotepad() {
 
   useEffect(() => {
     getNotepad(notepadId).then((notepad) => setForm(notepad));
-  }, []);
+  }, [notepadId]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

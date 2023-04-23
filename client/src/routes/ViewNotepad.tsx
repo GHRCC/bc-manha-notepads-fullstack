@@ -38,7 +38,7 @@ export function ViewNotepad() {
 
   useEffect(() => {
     getNotepad(notepadId).then((notepadData) => setNotepad(notepadData));
-  }, []);
+  }, [notepadId]);
 
   async function onClickDelete() {
     const response = await deleteNotepad(notepad.id);
