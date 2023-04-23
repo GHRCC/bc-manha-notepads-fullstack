@@ -1,36 +1,22 @@
 import { useState, useEffect } from "react";
-import { api } from "../api";
-import { NotepadList, Notepad } from "../components/NotepadList";
+import { NotepadList } from "../components/NotepadList";
+import { getNotepads } from "../api/getNotepads";
+import type { Notepad } from "../../../shared/types";
 
-async function pegaNotepads() {
-  const res = await api.get("/notepads");
-  const notepads = res.data;
-  return notepads;
-}
-
-const initialNotepads: Notepad[] = [];
+const initialNotepadList: Notepad[] = [];
 
 export function Home() {
-  const [notepads, setNotepads] = useState(initialNotepads);
-  const [isLoading, setIsLoading] = useState(false);
-  const textoCarregando = isLoading ? "Carregando..." : "";
+  const [notepadList, setNotepadList] = useState(initialNotepadList);
 
   useEffect(() => {
-    setIsLoading(true);
-    pegaNotepads().then((notepads) => {
-      setNotepads(notepads);
-      setIsLoading(false);
+    getNotepads().then((notepadList) => {
+      setNotepadList(notepadList);
     });
   }, []);
 
-  useEffect(() => {
-    //alert(`isLoading é igual a: ${isLoading}`);
-  }, [isLoading]);
-
   return (
     <div>
-      <div>{textoCarregando}</div>
-      <NotepadList notepads={notepads} />
+      <NotepadList notepads={notepadList} />
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 
-type LinkButtonProps = {
+export type LinkButtonProps = {
   to: string;
-  children: string;
+  children: React.ReactNode;
 };
 
 export function LinkButton(props: LinkButtonProps) {

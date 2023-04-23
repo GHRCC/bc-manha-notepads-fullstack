@@ -3,9 +3,20 @@ import toast from "react-simple-toasts";
 import { useNavigate, useParams } from "react-router-dom";
 import { TextField } from "../components/TextField";
 import { TextArea } from "../components/TextArea";
-import { api } from "../api";
+import { getNotepad } from "../api/getNotepad";
+import { putNotepad } from "../api/putNotepad";
 
-const initialCreateNotepad = {
+const texts = {
+  title: "Editar notepad",
+  createNotepadSuccess: "O notepad foi editado com sucesso!",
+  createNotepadFailure: "Houve um erro ao editar o seu notepad. :(",
+  titlePlaceholder: "Digite o título",
+  subtitlePlaceholder: "Digite o subtítulo",
+  contentPlaceholder: "Digite o conteúdo",
+  submitButtonLabel: "Enviar",
+};
+
+const initialEditNotepad = {
   title: "",
   subtitle: "",
   content: "",
@@ -14,47 +25,45 @@ const initialCreateNotepad = {
 export function EditNotepad() {
   const params = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState(initialCreateNotepad);
+
+  const notepadId = Number(params.id);
+  const [form, setForm] = useState(initialEditNotepad);
 
   useEffect(() => {
-    api.get(`/notepads/${params.id}`).then((results) =>
-      setForm({
-        title: results.data.title,
-        subtitle: results.data.subtitle,
-        content: results.data.content,
-      })
-    );
+    getNotepad(notepadId).then((notepad) => setForm(notepad));
   }, []);
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const response = await putNotepad(notepadId, form);
+    if (response.success) {
+      toast(texts.createNotepadSuccess);
+      navigate("/");
+    } else {
+      toast(texts.createNotepadFailure);
+    }
+  }
 
   return (
     <div>
-      <h1 className="text-center text-2xl font-bold my-4">Editar notepad</h1>
+      <h1 className="text-center text-2xl font-bold my-4">{texts.title}</h1>
       <form
         className="flex flex-col gap-2 mx-2 md:mx-auto md:max-w-screen-md"
         noValidate
-        onSubmit={async (event) => {
-          event.preventDefault();
-          const response = await api.put(`/notepads/${params.id}`, form);
-          if (response.data.success) {
-            toast("O notepad foi editado com sucesso!");
-            navigate("/");
-          } else {
-            toast("Houve um erro ao editar o seu notepad. :(");
-          }
-        }}
+        onSubmit={onSubmit}
       >
         <TextField
-          placeholder="Digite o título"
+          placeholder={texts.titlePlaceholder}
           value={form.title}
           onChange={(title) => setForm({ ...form, title })}
         />
         <TextField
-          placeholder="Digite o subtítulo"
+          placeholder={texts.subtitlePlaceholder}
           value={form.subtitle}
           onChange={(subtitle) => setForm({ ...form, subtitle })}
         />
         <TextArea
-          placeholder="Digite o conteúdo"
+          placeholder={texts.contentPlaceholder}
           value={form.content}
           onChange={(content) => setForm({ ...form, content })}
         />
@@ -62,7 +71,7 @@ export function EditNotepad() {
           type="submit"
           className="bg-green-400 hover:bg-green-500 text-white py-2 px-3 rounded-md uppercase font-bold text-sm shadow-lg"
         >
-          Enviar
+          {texts.submitButtonLabel}
         </button>
       </form>
     </div>

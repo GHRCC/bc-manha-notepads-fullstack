@@ -8,7 +8,7 @@ export function Breadcrumbs({ links }: BreadcrumbsProps) {
   return (
     <nav className="flex flex-row items-center gap-4">
       {links.map(({ title, link }, index) => (
-        <span className="flex flex-row items-center">
+        <span className="flex flex-row items-center" key={index}>
           <Link
             key={index}
             to={link}

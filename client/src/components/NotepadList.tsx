@@ -1,11 +1,5 @@
 import { Link } from "react-router-dom";
-
-export type Notepad = {
-  id: number;
-  title: string;
-  subtitle: string;
-  created_at: string;
-};
+import type { Notepad } from "../../../shared/types";
 
 export type NotepadListProps = {
   notepads: Notepad[];
@@ -14,15 +8,18 @@ export type NotepadListProps = {
 export function NotepadList({ notepads }: NotepadListProps) {
   return (
     <div className="bg-white p-4 w-full md:max-w-screen-md md:mx-auto md:m-8 md:rounded-lg md:shadow-lg">
-      {notepads.map((notepadAtual) => {
+      {notepads.map((notepad, index) => {
         return (
-          <Link to={`/publicacoes/${notepadAtual.id}`} key={notepadAtual.id}>
-            <div key={notepadAtual.id} className="py-4 border-b">
-              <time dateTime={notepadAtual.created_at}>
-                {new Date(notepadAtual.created_at).toLocaleDateString()}
+          <Link to={`/publicacoes/${notepad.id}`} key={notepad.id}>
+            <div className={`py-4 ${index > 0 && "border-t"}`}>
+              <time
+                dateTime={notepad.created_at}
+                className="text-gray-500 text-sm"
+              >
+                {new Date(notepad.created_at).toLocaleDateString()}
               </time>
-              <h2 className="font-bold text-lg">{notepadAtual.title}</h2>
-              <p>{notepadAtual.subtitle}</p>
+              <h2 className="font-bold text-lg">{notepad.title}</h2>
+              <p>{notepad.subtitle}</p>
             </div>
           </Link>
         );

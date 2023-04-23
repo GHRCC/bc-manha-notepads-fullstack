@@ -1,6 +1,6 @@
 import express from "express";
-import { notepadController } from "./notepad/notepadController";
-import { commentController } from "./comment/commentController";
+import { notepadController } from "./notepad/notepad.controller";
+import { commentController } from "./comment/comment.controller";
 
 const app = express();
 const host = "0.0.0.0";
