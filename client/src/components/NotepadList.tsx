@@ -7,7 +7,7 @@ export type NotepadListProps = {
 
 export function NotepadList({ notepads }: NotepadListProps) {
   return (
-    <div className="bg-white p-4 w-full md:max-w-screen-md md:mx-auto md:m-8 md:rounded-lg md:shadow-lg">
+    <div className="bg-white p-4 w-full md:rounded-lg md:shadow-lg">
       {notepads.map((notepad, index) => {
         return (
           <Link to={`/publicacoes/${notepad.id}`} key={notepad.id}>

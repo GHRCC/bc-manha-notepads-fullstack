@@ -24,8 +24,8 @@ export function findNotepads({
   limit = 10,
   offset = 0,
 }: FindNotepadsParams = {}) {
-  const notepadsFiles = json
-    .listJSON(notepadModelDataPath)
+  const notepadsFiles = json.listJSON(notepadModelDataPath);
+  const filteredNotepadsFiles = notepadsFiles
     .sort((a, b) => {
       const idA = parseInt(a);
       const idB = parseInt(b);
@@ -33,10 +33,12 @@ export function findNotepads({
     })
     .slice(offset, limit + offset);
 
-  const notepads = notepadsFiles.map((file) => {
+  const count = notepadsFiles.length;
+  const notepads = filteredNotepadsFiles.map((file) => {
     return json.readJSON(notepadModelDataPath, file);
   });
-  return notepads;
+
+  return { notepads, count };
 }
 
 export function deleteNotepadById(id: number) {

@@ -5,9 +5,9 @@ export const notepadController = express.Router();
 
 // Lista os notepads
 notepadController.get("/", (req, res) => {
-  const limit = Number(req.query.limit ?? 10);
-  const offset = Number(req.query.offset ?? 0);
-  const notepads = notepadService.findNotepads().slice(offset, offset + limit);
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
+  const offset = req.query.offset ? Number(req.query.offset) : undefined;
+  const notepads = notepadService.findNotepads({ limit, offset });
   res.status(200).json(notepads);
 });
 
