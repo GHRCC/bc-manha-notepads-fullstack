@@ -4,6 +4,7 @@ import { Notepad } from "../../../shared/types";
 type GetNotepadsInput = {
   limit?: number;
   offset?: number;
+  search?: string;
 };
 
 type GetNotepadsOutput = {

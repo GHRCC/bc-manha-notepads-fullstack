@@ -5,6 +5,7 @@ import type { Notepad } from "../../../shared/types";
 type FindNotepadsParams = {
   limit?: number;
   offset?: number;
+  search?: string;
 };
 
 const notepadModelPath = path.join("data", "notepad.data");
@@ -20,25 +21,69 @@ export function findNotepadById(id: number) {
   }
 }
 
+function normalizeText(text: string) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\n/g, " ")
+    .replace(/\s+/g, " ");
+}
+
 export function findNotepads({
   limit = 10,
   offset = 0,
+  search,
 }: FindNotepadsParams = {}) {
   const notepadsFiles = json.listJSON(notepadModelDataPath);
-  const filteredNotepadsFiles = notepadsFiles
-    .sort((a, b) => {
-      const idA = parseInt(a);
-      const idB = parseInt(b);
-      return idA - idB;
-    })
-    .slice(offset, limit + offset);
-
-  const count = notepadsFiles.length;
-  const notepads = filteredNotepadsFiles.map((file) => {
-    return json.readJSON(notepadModelDataPath, file);
+  const sortedNotepadsFiles = notepadsFiles.sort((a, b) => {
+    const idA = parseInt(a);
+    const idB = parseInt(b);
+    return idA - idB;
   });
 
-  return { notepads, count };
+  if (search === undefined) {
+    const paginatedNotepadsFiles = sortedNotepadsFiles.slice(
+      offset,
+      limit + offset
+    );
+
+    const count = notepadsFiles.length;
+    const notepads = paginatedNotepadsFiles.map((file) => {
+      return json.readJSON(notepadModelDataPath, file);
+    });
+
+    return { notepads, count };
+  } else {
+    const normalizedSearch = normalizeText(search);
+    const notepads: Notepad[] = sortedNotepadsFiles.map((file) => {
+      return json.readJSON(notepadModelDataPath, file);
+    });
+
+    const searchedNotepadsFiles = notepads.filter(
+      ({ title, subtitle, content }) => {
+        const normalizedTitle = normalizeText(title);
+        const normalizedSubtitle = normalizeText(subtitle);
+        const normalizedContent = normalizeText(content);
+        return (
+          normalizedTitle.includes(normalizedSearch) ||
+          normalizedSubtitle.includes(normalizedSearch) ||
+          normalizedContent.includes(normalizedSearch)
+        );
+      }
+    );
+
+    const count = searchedNotepadsFiles.length;
+    const paginatedNotepadsFiles = searchedNotepadsFiles.slice(
+      offset,
+      limit + offset
+    );
+
+    return {
+      count,
+      notepads: paginatedNotepadsFiles,
+    };
+  }
 }
 
 export function deleteNotepadById(id: number) {

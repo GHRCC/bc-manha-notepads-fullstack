@@ -7,7 +7,9 @@ export const notepadController = express.Router();
 notepadController.get("/", (req, res) => {
   const limit = req.query.limit ? Number(req.query.limit) : undefined;
   const offset = req.query.offset ? Number(req.query.offset) : undefined;
-  const notepads = notepadService.findNotepads({ limit, offset });
+  const search =
+    req.query.search !== undefined ? req.query.search.toString() : undefined;
+  const notepads = notepadService.findNotepads({ limit, offset, search });
   res.status(200).json(notepads);
 });
 

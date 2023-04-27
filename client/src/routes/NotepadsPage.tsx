@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { NotepadList } from "../components/NotepadList";
 import { PaginationButtons } from "../components/PaginationButtons";
 import { config } from "../config";
+import { createUrlParams } from "../createUrlParams";
 import { getNotepads } from "../api/getNotepads";
 import type { Notepad } from "../../../shared/types";
 
@@ -16,13 +17,16 @@ const initialNotepadList = {
 export function NotepadsPage() {
   const [notepadList, setNotepadList] = useState(initialNotepadList);
   const params = useParams();
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get("search") || undefined;
+  const pageParams = createUrlParams({ search });
   const page = params.page === undefined ? 1 : +params.page;
   const pageCount = Math.ceil(notepadList.count / pageSize);
   const limit = pageSize;
   const offset = pageSize * (page - 1);
 
   useEffect(() => {
-    getNotepads({ limit, offset }).then((notepadList) =>
+    getNotepads({ limit, offset, search }).then((notepadList) =>
       setNotepadList(notepadList)
     );
   }, [params]);
@@ -33,7 +37,8 @@ export function NotepadsPage() {
         Página {page} da lista de notepads
       </h2>
       <p className="text-gray-600 mb-3 text-center">
-        {notepadList.count} resultados encontrados
+        {notepadList.count} resultados encontrados{" "}
+        {search && `para a busca de "${search}"`}
       </p>
       <NotepadList notepads={notepadList.notepads} />
       <div className="mt-3">
@@ -45,9 +50,9 @@ export function NotepadsPage() {
           pageCount={pageCount}
           getLink={(page) => {
             if (page === 1) {
-              return "/";
+              return `/${pageParams}`;
             }
-            return `/notepads/page/${page}`;
+            return `/notepads/page/${page}${pageParams}`;
           }}
         />
       </div>
