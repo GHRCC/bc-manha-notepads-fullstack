@@ -6,6 +6,8 @@ type FindNotepadsParams = {
   limit?: number;
   offset?: number;
   search?: string;
+  order_by?: string;
+  direction?: string;
 };
 
 const notepadModelPath = path.join("data", "notepad.data");
@@ -33,57 +35,70 @@ function normalizeText(text: string) {
 export function findNotepads({
   limit = 10,
   offset = 0,
-  search,
+  search = "",
+  order_by = "created_at",
+  direction = "desc",
 }: FindNotepadsParams = {}) {
-  const notepadsFiles = json.listJSON(notepadModelDataPath);
-  const sortedNotepadsFiles = notepadsFiles.sort((a, b) => {
+  console.log(order_by);
+  const rawNotepadsFiles = json.listJSON(notepadModelDataPath);
+  const notepadsFiles = rawNotepadsFiles.sort((a, b) => {
     const idA = parseInt(a);
     const idB = parseInt(b);
     return idA - idB;
   });
 
-  if (search === undefined) {
-    const paginatedNotepadsFiles = sortedNotepadsFiles.slice(
-      offset,
-      limit + offset
-    );
+  const notepads: Notepad[] = notepadsFiles.map((file) => {
+    return json.readJSON(notepadModelDataPath, file);
+  });
 
-    const count = notepadsFiles.length;
-    const notepads = paginatedNotepadsFiles.map((file) => {
-      return json.readJSON(notepadModelDataPath, file);
-    });
+  const normalizedSearch = normalizeText(search);
 
-    return { notepads, count };
-  } else {
-    const normalizedSearch = normalizeText(search);
-    const notepads: Notepad[] = sortedNotepadsFiles.map((file) => {
-      return json.readJSON(notepadModelDataPath, file);
-    });
+  const searchedNotepads =
+    normalizedSearch.length === 0
+      ? notepads
+      : notepads.filter(({ title, subtitle, content }) => {
+          const normalizedTitle = normalizeText(title);
+          const normalizedSubtitle = normalizeText(subtitle);
+          const normalizedContent = normalizeText(content);
+          return (
+            normalizedTitle.includes(normalizedSearch) ||
+            normalizedSubtitle.includes(normalizedSearch) ||
+            normalizedContent.includes(normalizedSearch)
+          );
+        });
 
-    const searchedNotepadsFiles = notepads.filter(
-      ({ title, subtitle, content }) => {
-        const normalizedTitle = normalizeText(title);
-        const normalizedSubtitle = normalizeText(subtitle);
-        const normalizedContent = normalizeText(content);
-        return (
-          normalizedTitle.includes(normalizedSearch) ||
-          normalizedSubtitle.includes(normalizedSearch) ||
-          normalizedContent.includes(normalizedSearch)
-        );
+  const sortedNotepads = searchedNotepads.sort((notepadA, notepadB) => {
+    if (order_by === "created_at") {
+      const createdAtNotepadA = Date.parse(notepadA.created_at);
+      const createdAtNotepadB = Date.parse(notepadB.created_at);
+      return createdAtNotepadA - createdAtNotepadB;
+    } else if (order_by === "title") {
+      const titleNotepadA = notepadA.title;
+      const titleNotepadB = notepadB.title;
+      if (titleNotepadA < titleNotepadB) {
+        return -1;
+      } else if (titleNotepadB > titleNotepadA) {
+        return 1;
+      } else {
+        return 0;
       }
-    );
+    } else {
+      const idNotepadA = notepadA.id;
+      const idNotepadB = notepadB.id;
+      return idNotepadA - idNotepadB;
+    }
+  });
 
-    const count = searchedNotepadsFiles.length;
-    const paginatedNotepadsFiles = searchedNotepadsFiles.slice(
-      offset,
-      limit + offset
-    );
+  const directedNotepads =
+    direction === "asc" ? sortedNotepads : sortedNotepads.reverse();
 
-    return {
-      count,
-      notepads: paginatedNotepadsFiles,
-    };
-  }
+  const count = directedNotepads.length;
+  const paginatedNotepadsFiles = directedNotepads.slice(offset, limit + offset);
+
+  return {
+    count,
+    notepads: paginatedNotepadsFiles,
+  };
 }
 
 export function deleteNotepadById(id: number) {
@@ -92,7 +107,6 @@ export function deleteNotepadById(id: number) {
     notepad = json.readJSON(notepadModelDataPath, `${id}.json`);
     json.deleteJSON(notepadModelDataPath, `${id}.json`);
   } catch (error) {
-    console.log(error);
     return {
       success: false,
       notepad: null,

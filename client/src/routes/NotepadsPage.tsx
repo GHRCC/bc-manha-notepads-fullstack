@@ -19,6 +19,8 @@ export function NotepadsPage() {
   const params = useParams();
   const [searchParams] = useSearchParams();
   const search = searchParams.get("search") || undefined;
+  const orderBy = searchParams.get("order_by") || undefined;
+  const direction = searchParams.get("direction") || undefined;
   const pageParams = createUrlParams({ search });
   const page = params.page === undefined ? 1 : +params.page;
   const pageCount = Math.ceil(notepadList.count / pageSize);
@@ -26,8 +28,8 @@ export function NotepadsPage() {
   const offset = pageSize * (page - 1);
 
   useEffect(() => {
-    getNotepads({ limit, offset, search }).then((notepadList) =>
-      setNotepadList(notepadList)
+    getNotepads({ limit, offset, search, direction, order_by: orderBy }).then(
+      (notepadList) => setNotepadList(notepadList)
     );
   }, [params]);
 

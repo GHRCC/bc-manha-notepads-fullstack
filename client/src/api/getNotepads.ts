@@ -5,6 +5,8 @@ type GetNotepadsInput = {
   limit?: number;
   offset?: number;
   search?: string;
+  order_by?: string;
+  direction?: string;
 };
 
 type GetNotepadsOutput = {
