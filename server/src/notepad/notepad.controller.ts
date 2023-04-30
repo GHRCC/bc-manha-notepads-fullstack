@@ -34,9 +34,15 @@ notepadController.get("/:id", (req, res) => {
 
 // Cria um notepad
 notepadController.post("/", (req, res) => {
-  console.log(req.query);
   const response = notepadService.createNotepad(req.body);
   res.status(201).json(response);
+});
+
+// Lista os comentários de um notepad
+notepadController.get("/:id/comments", (req, res) => {
+  const id = Number(req.params.id);
+  const response = notepadService.findNotepadCommentsById(id);
+  res.status(200).json(response);
 });
 
 // Sobreescreve um notepad pelo ID

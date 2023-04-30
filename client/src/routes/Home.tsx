@@ -5,6 +5,7 @@ import { NotepadList } from "../components/NotepadList";
 import { PaginationButtons } from "../components/PaginationButtons";
 import { getNotepads } from "../api/getNotepads";
 import type { Notepad } from "../../../shared/types";
+import { asyncDebounce } from "../asyncDebounce";
 import { config } from "../config";
 import { createUrlParams } from "../createUrlParams";
 
@@ -13,6 +14,7 @@ const texts = {
 };
 
 const pageSize = config.pageSize;
+const debouncedGetNotepads = asyncDebounce(getNotepads, 1000);
 
 const initialNotepadList = {
   count: 0,
@@ -25,22 +27,20 @@ export function Home() {
   const [search, setSearch] = useState(initialSearch ?? "");
   const [orderBy, setOrderBy] = useState("created_at");
   const [direction, setDirection] = useState("desc");
-
   const [notepadList, setNotepadList] = useState(initialNotepadList);
   const pageCount = Math.ceil(notepadList.count / pageSize);
   const pageParams = createUrlParams({ search, direction, order_by: orderBy });
+  const getNotepadsParams = {
+    offset: 0,
+    limit: pageSize,
+    search: search.length > 0 ? search : undefined,
+    direction,
+    order_by: orderBy,
+  };
 
   useEffect(() => {
-    getNotepads({
-      offset: 0,
-      limit: pageSize,
-      search: search.length > 0 ? search : undefined,
-      direction,
-      order_by: orderBy,
-    }).then((notepadList) => {
-      setNotepadList(notepadList);
-    });
-  }, [search, direction, orderBy]);
+    debouncedGetNotepads(getNotepadsParams).then(setNotepadList);
+  }, [direction, orderBy, search]);
 
   return (
     <div className="md:max-w-screen-md md:mx-auto md:m-8 m-3">
@@ -51,9 +51,7 @@ export function Home() {
           type="search"
           value={search}
           placeholder={texts.searchPlaceholder}
-          onChange={(event) => {
-            setSearch(event.target.value);
-          }}
+          onChange={(event) => setSearch(event.target.value)}
         />
       </div>
       <div className="flex flex-row gap-2 mb-3">

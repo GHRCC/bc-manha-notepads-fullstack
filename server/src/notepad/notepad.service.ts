@@ -1,5 +1,6 @@
 import path from "path";
 import * as json from "../json";
+import * as commentService from "../comment/comment.service";
 import type { Notepad } from "../../../shared/types";
 
 type FindNotepadsParams = {
@@ -23,13 +24,15 @@ export function findNotepadById(id: number) {
   }
 }
 
-function normalizeText(text: string) {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\n/g, " ")
-    .replace(/\s+/g, " ");
+export function findNotepadCommentsById(notepadId: number) {
+  const comments = commentService.findComments();
+  return comments
+    .filter((comment) => comment.notepad_id === notepadId)
+    .sort((commentA, commentB) => {
+      const createdAtA = Date.parse(commentA.created_at);
+      const createdAtB = Date.parse(commentB.created_at);
+      return createdAtB - createdAtA;
+    });
 }
 
 export function findNotepads({
@@ -39,7 +42,6 @@ export function findNotepads({
   order_by = "created_at",
   direction = "desc",
 }: FindNotepadsParams = {}) {
-  console.log(order_by);
   const rawNotepadsFiles = json.listJSON(notepadModelDataPath);
   const notepadsFiles = rawNotepadsFiles.sort((a, b) => {
     const idA = parseInt(a);
@@ -190,4 +192,13 @@ export function overwriteNotepadById(id: number, notepadData: Notepad) {
     success: true,
     notepad,
   };
+}
+
+function normalizeText(text: string) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\n/g, " ")
+    .replace(/\s+/g, " ");
 }

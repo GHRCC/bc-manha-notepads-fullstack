@@ -13,7 +13,7 @@ export function findComments() {
   return comments;
 }
 
-export function createComment(commentData: Comment) {
+export function createComment(commentData: Omit<Comment, "id" | "created_at">) {
   let comment: Comment;
   const commentsLatestId = json.readJSON(
     commentModelPath,
